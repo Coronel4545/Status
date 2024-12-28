@@ -75,26 +75,24 @@ let contract_ABI = [
     {"stateMutability":"payable","type":"receive"}
 ];
 
-// Conectar ao provedor WebSocket
-const provider = new Web3.providers.WebsocketProvider("wss://bsc-ws-node.nariox.org:443"); // Tente um URL diferente se necessário
-const web3 = new Web3(provider);
+// Conectar ao provedor HTTP sem solicitar a wallet
+const web3 = new Web3("https://data-seed-prebsc-1-s1.binance.org:8545"); // URL do provedor HTTP para testnet
 const contractAddress = "0xac697bF33b025c694aa0eD4f4fE29a60dB8F57E4"; // Endereço do contrato na testnet
 const contract = new web3.eth.Contract(contract_ABI, contractAddress);
 
-// Escutando o evento updateInternalBurn em tempo real
-contract.events.updateInternalBurn()
+// Função para escutar o evento updateInternalBurn
+function setupEventListeners() {
+    contract.events.updateInternalBurn({
+        filter: { /* filtros, se necessário */ }
+    })
     .on('data', (event) => {
         const isEnabled = event.returnValues.burnInternal;
-        document.getElementById("statusInternalBurn").innerText = isEnabled ? "ENABLE" : "DESABLE";
+        document.getElementById("StatusInternalBurn").innerText = isEnabled ? "ENABLE" : "DESABLE";
     })
     .on('error', (error) => {
         console.error("Erro ao escutar o evento:", error);
     });
+}
 
-// Tratamento de conexão
-provider.on('connect', () => {
-    console.log('Conectado ao WebSocket');
-});
-provider.on('error', (error) => {
-    console.error('Erro de conexão:', error);
-});
+// Chama a função para configurar os ouvintes de eventos
+setupEventListeners();
