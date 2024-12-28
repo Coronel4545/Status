@@ -75,8 +75,8 @@ let contract_ABI = [
     {"stateMutability":"payable","type":"receive"}
 ];
 
-// Conectar ao provedor WebSocket sem solicitar a wallet
-const provider = new Web3.providers.WebsocketProvider("wss://data-seed-prebsc-1-s1.binance.org:8545/ws"); // URL do WebSocket para testnet
+// Conectar ao provedor WebSocket
+const provider = new Web3.providers.WebsocketProvider("wss://bsc-ws-node.nariox.org:443"); // Tente um URL diferente se necessário
 const web3 = new Web3(provider);
 const contractAddress = "0xac697bF33b025c694aa0eD4f4fE29a60dB8F57E4"; // Endereço do contrato na testnet
 const contract = new web3.eth.Contract(contract_ABI, contractAddress);
@@ -85,7 +85,7 @@ const contract = new web3.eth.Contract(contract_ABI, contractAddress);
 contract.events.updateInternalBurn()
     .on('data', (event) => {
         const isEnabled = event.returnValues.burnInternal;
-        document.getElementById("StatusInternalBurn").innerText = isEnabled ? "ENABLE" : "DESABLE";
+        document.getElementById("statusInternalBurn").innerText = isEnabled ? "ENABLE" : "DESABLE";
     })
     .on('error', (error) => {
         console.error("Erro ao escutar o evento:", error);
