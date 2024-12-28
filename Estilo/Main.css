@@ -1,0 +1,23 @@
+/* Estilo para centralizar a div principal */
+#principal {
+    display: flex; /* Usando flexbox para centralização */
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente */
+    height: 100vh; /* Altura total da viewport */
+}
+
+/* Estilo para o span */
+#principal span {
+    font-size: 24px; /* Tamanho da fonte */
+    font-weight: bold; /* Negrito */
+}
+
+/* Estilo para o label */
+#principal label {
+    
+    font-weight: normal; /* Peso normal */
+}
+
+#StatusInternalBurn{
+    color: red;
+}
