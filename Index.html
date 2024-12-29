@@ -95,24 +95,32 @@
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const web3 = new Web3("wss://testnet.binance.vision/ws");
+    const web3 = new Web3("https://data-seed-prebsc-1-s1.binance.org:8545");
     const contractInteract = new web3.eth.Contract(contract_ABI, contract);
 
-    function setupEventListeners() {
-        contractInteract.events.updateInternalBurn({
-            filter: {}
+    async function checkEvents() {
+        const latestBlock = await web3.eth.getBlockNumber();
+        
+        contractInteract.getPastEvents('updateInternalBurn', {
+            fromBlock: latestBlock - 5000,
+            toBlock: 'latest'
         })
-        .on('data', (event) => {
-            const isStatus = event.returnValues.burnInternal;
-            console.log('Evento capturado, o valor é: ', isStatus)
-            document.getElementById('StatusInternalBurn').innerText = isStatus ? "Enable" : "Desable";
+        .then(events => {
+            if (events.length > 0) {
+                const lastEvent = events[events.length - 1];
+                const isStatus = lastEvent.returnValues.burnInternal;
+                console.log('Evento capturado, o valor é: ', isStatus)
+                document.getElementById('StatusInternalBurn').innerText = isStatus ? "Enable" : "Desable";
+            }
         })
-        .on('error', (error) => {
-            console.error('HOUVE UM ERRO AO ESCUTAR O EVENTO. O ERRO É : ', error);
+        .catch(error => {
+            console.error('HOUVE UM ERRO AO BUSCAR EVENTOS: ', error);
         });
     }
 
-    setupEventListeners();
+    // Verificar eventos a cada 30 segundos
+    checkEvents();
+    setInterval(checkEvents, 30000);
 });
     </script>
 </body>
