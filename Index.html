@@ -98,11 +98,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     const web3 = new Web3("https://data-seed-prebsc-1-s1.binance.org:8545");
     const contractInteract = new web3.eth.Contract(contract_ABI, contract);
 
+    // Função para buscar o estado atual do burnInternal
+    async function getCurrentBurnStatus() {
+        try {
+            const status = await contractInteract.methods.burnInternal().call();
+            console.log('Status atual do burnInternal:', status);
+            document.getElementById('StatusInternalBurn').innerText = status ? "Enable" : "Desable";
+            return status;
+        } catch (error) {
+            console.error('Erro ao buscar status atual:', error);
+        }
+    }
+
     async function checkEvents() {
         try {
             const latestBlock = await web3.eth.getBlockNumber();
-            // Reduzindo para 1000 blocos para evitar o limite
-            const fromBlock = Math.max(0, latestBlock - 1000);
+            // Reduzindo para apenas 100 blocos
+            const fromBlock = Math.max(0, latestBlock - 100);
             
             const events = await contractInteract.getPastEvents('updateInternalBurn', {
                 fromBlock: fromBlock,
@@ -114,33 +126,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const isStatus = lastEvent.returnValues.burnInternal;
                 console.log('Evento capturado, o valor é: ', isStatus);
                 document.getElementById('StatusInternalBurn').innerText = isStatus ? "Enable" : "Desable";
+            } else {
+                // Se não encontrar eventos recentes, busca o estado atual
+                await getCurrentBurnStatus();
             }
         } catch (error) {
             console.error('HOUVE UM ERRO AO BUSCAR EVENTOS: ', error);
-            // Tentar novamente com menos blocos se houver erro de limite
-            if (error.message.includes('limit exceeded')) {
-                try {
-                    const latestBlock = await web3.eth.getBlockNumber();
-                    // Reduzir ainda mais para 500 blocos
-                    const fromBlock = Math.max(0, latestBlock - 500);
-                    
-                    const events = await contractInteract.getPastEvents('updateInternalBurn', {
-                        fromBlock: fromBlock,
-                        toBlock: 'latest'
-                    });
-
-                    if (events.length > 0) {
-                        const lastEvent = events[events.length - 1];
-                        const isStatus = lastEvent.returnValues.burnInternal;
-                        console.log('Evento capturado (retry), o valor é: ', isStatus);
-                        document.getElementById('StatusInternalBurn').innerText = isStatus ? "Enable" : "Desable";
-                    }
-                } catch (retryError) {
-                    console.error('ERRO NA SEGUNDA TENTATIVA: ', retryError);
-                }
-            }
+            // Em caso de erro, tenta pelo menos mostrar o estado atual
+            await getCurrentBurnStatus();
         }
     }
+
+    // Buscar estado inicial
+    await getCurrentBurnStatus();
 
     // Verificar eventos a cada 30 segundos
     checkEvents();
