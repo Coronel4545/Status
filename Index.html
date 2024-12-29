@@ -99,23 +99,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     const contractInteract = new web3.eth.Contract(contract_ABI, contract);
 
     async function checkEvents() {
-        const latestBlock = await web3.eth.getBlockNumber();
-        
-        contractInteract.getPastEvents('updateInternalBurn', {
-            fromBlock: latestBlock - 5000,
-            toBlock: 'latest'
-        })
-        .then(events => {
+        try {
+            const latestBlock = await web3.eth.getBlockNumber();
+            // Reduzindo para 1000 blocos para evitar o limite
+            const fromBlock = Math.max(0, latestBlock - 1000);
+            
+            const events = await contractInteract.getPastEvents('updateInternalBurn', {
+                fromBlock: fromBlock,
+                toBlock: 'latest'
+            });
+
             if (events.length > 0) {
                 const lastEvent = events[events.length - 1];
                 const isStatus = lastEvent.returnValues.burnInternal;
-                console.log('Evento capturado, o valor é: ', isStatus)
+                console.log('Evento capturado, o valor é: ', isStatus);
                 document.getElementById('StatusInternalBurn').innerText = isStatus ? "Enable" : "Desable";
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('HOUVE UM ERRO AO BUSCAR EVENTOS: ', error);
-        });
+            // Tentar novamente com menos blocos se houver erro de limite
+            if (error.message.includes('limit exceeded')) {
+                try {
+                    const latestBlock = await web3.eth.getBlockNumber();
+                    // Reduzir ainda mais para 500 blocos
+                    const fromBlock = Math.max(0, latestBlock - 500);
+                    
+                    const events = await contractInteract.getPastEvents('updateInternalBurn', {
+                        fromBlock: fromBlock,
+                        toBlock: 'latest'
+                    });
+
+                    if (events.length > 0) {
+                        const lastEvent = events[events.length - 1];
+                        const isStatus = lastEvent.returnValues.burnInternal;
+                        console.log('Evento capturado (retry), o valor é: ', isStatus);
+                        document.getElementById('StatusInternalBurn').innerText = isStatus ? "Enable" : "Desable";
+                    }
+                } catch (retryError) {
+                    console.error('ERRO NA SEGUNDA TENTATIVA: ', retryError);
+                }
+            }
+        }
     }
 
     // Verificar eventos a cada 30 segundos
