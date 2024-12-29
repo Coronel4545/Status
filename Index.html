@@ -93,26 +93,27 @@
     {"inputs":[],"name":"withdrawWBNB","outputs":[],"stateMutability":"nonpayable","type":"function"},
     {"stateMutability":"payable","type":"receive"}
 ];
-const web3 = new web3("wss://testnet.binance.vision/ws");
-const contractInteract = new web3.eth.Contract(contract_ABI, contract);
- 
 
-        function setupEventListeners(){
-            contractInteract.events.updateInternalBurn({
-                filter: {}
-            })
-            .on('data',(event)=>{
-                const isStatus = event.returnValues.burnInternal;
-                console.log('Evento capturado, o valor é: ', isStatus)
-                document.getElementById('StatusInternalBurn').innerText = isStatus ? "Enable" : "Desable";
+document.addEventListener('DOMContentLoaded', async () => {
+    const web3 = new Web3("wss://testnet.binance.vision/ws");
+    const contractInteract = new web3.eth.Contract(contract_ABI, contract);
 
-            })
-            .on('error', (error)=>{
-                console.error('HOUVE UM ERRO AO ESCUTAR O EVENTO. O ERRO É : ', error);
-            })
-        }
+    function setupEventListeners() {
+        contractInteract.events.updateInternalBurn({
+            filter: {}
+        })
+        .on('data', (event) => {
+            const isStatus = event.returnValues.burnInternal;
+            console.log('Evento capturado, o valor é: ', isStatus)
+            document.getElementById('StatusInternalBurn').innerText = isStatus ? "Enable" : "Desable";
+        })
+        .on('error', (error) => {
+            console.error('HOUVE UM ERRO AO ESCUTAR O EVENTO. O ERRO É : ', error);
+        });
+    }
 
-        setupEventListeners();
-     </script>
+    setupEventListeners();
+});
+    </script>
 </body>
 </html>
