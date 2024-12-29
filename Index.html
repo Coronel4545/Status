@@ -99,12 +99,10 @@ const contractInteract = new web3.eth.Contract(contract_ABI, contract);
 
         function setupEventListeners(){
             contractInteract.events.updateInternalBurn({
-                filter: {
-                    burnInternal
-                }
+                filter: {}
             })
-            .on('data',(events)=>{
-                const isStatus = event.returnValue.burnInternal;
+            .on('data',(event)=>{
+                const isStatus = event.returnValues.burnInternal;
                 console.log('Evento capturado, o valor é: ', isStatus)
                 document.getElementById('StatusInternalBurn').innerText = isStatus ? "Enable" : "Desable";
 
